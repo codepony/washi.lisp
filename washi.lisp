@@ -25,9 +25,9 @@
 ; you can just accept those 2
 
 
-; (replace-all) function for the lists:
-; Stolen from: http://cl-cookbook.sourceforge.net/strings.html
 (defun replace-all (string part replacement &key (test #'char=))
+  "(replace-all) function for the lists
+   Stolen from: http://cl-cookbook.sourceforge.net/strings.html"
   (with-output-to-string (out)
     (loop with part-length = (length part)
           for old-pos = 0 then (+ pos part-length)
@@ -41,9 +41,9 @@
            while pos)))
 
 
-; Also a (split-by-newline) function would be great:
-; Stolen & forked from http://cl-cookbook.sourceforge.net/strings.html
 (defun split-by-newline (string)
+  "Also a (split-by-newline) function would be great:
+   Stolen from: http://cl-cookbook.sourceforge.net/strings.html"
   (loop for i = 0 then (1+ j)
         as j = (position #\Newline string :start i)
         collect (subseq string i j)
@@ -65,6 +65,7 @@
 
 
 (defun get-server-list ()
+  "Returns a list of all washi servers in the network"
   (setf *server-list* (mapcar #'symbol-name
                               ; remove empty list parts, to fix bugs (and improve logic):
                               (remove '|| (mapcar #'intern
@@ -74,8 +75,8 @@
                                        "receive.php" "found")))))))
 
 
-; Now lets parse a found-site:
 (defun get-obj-list (found-site)
+  "Parses a found-site and returns a list oft the site encoded in utf-8"
   (let ((working (ignore-errors (drakma:http-request found-site))))
     ; Some servers give a #\Return #\Newline back:
     (let ((working-list (concatenate 'list working)))
@@ -92,16 +93,15 @@
 
 
 (defun save-obj-list ()
+  "Creates a list of pairs of sites with their objects"
   (setf *all-obj-list* (list))
   (loop for i from 0 to (1- (length *server-list*)) do
         (push (cons (nth i *server-list*) (cons (get-obj-list (nth i *server-list*)) nil)) *all-obj-list*))
-        ; Pushing every server-list pair into the *all-obj-list*.
   *all-obj-list*)
-  ; Return the list, not just NIL.
 
 
-; Next Step: search for the laundry:
 (defun search-ui ()
+  "A simple user interaction for the searching"
   (format t "What are you looking for?~%")
   (let ((str (read-line)))
     (cond ((equal str "back") (startup))
@@ -109,8 +109,8 @@
           (t (search-my-clothing (intern str))))))
           
 
-; Maybe you want to clean something:
 (defun clean-ui ()
+  "A simple user interaction for the cleaning"
   (format t "What do you want to clean?~%")
   (let ((str (read-line)))
     (format t "~%")
@@ -121,6 +121,7 @@
 
 
 (defun startup ()
+  "Initialize the interface and give a simple overview"
   (format t "Do you want to '(s)earch' or '(c)lean' or change (u)sername and password or 'take-all' or (quit) something?~%")
   (let ((str (read-line)))
     (cond ((or (equal str "search") (equal str "s")) (search-ui))
@@ -132,18 +133,21 @@
 
 
 (defun succsess (obj found-server-list)
+  "Function used when an object was found"
   (format t "Your ~a was found by me. ~a~%" obj found-server-list)
   (setf *isupdated* nil)
   (search-ui))
 
 
 (defun failed (obj)
+  "Function used when an object was not found"
   (format t "Your ~a was not found by me.~%" obj)
   (setf *isupdated* nil)
   (search-ui))
 
 
 (defun search-my-clothing (obj)
+  "This will lookup your object on the servers, and re-fetches the list if it's not found on the first time."
   (let ((obj-server-list (list)))
     ; -1 we start counting from 0, but length is human-like:
     (loop for i from 0 to (- (length *server-list*) 1)
@@ -168,10 +172,10 @@
         (setf *isupdated* t)
         ; recursive call:
         (search-my-clothing obj))))
-; Simply tries to find your object, should be clear to any lisper
 
 
 (defun clean-my-clothing (obj callcount)
+  "Sends your laundry to a random server"
   (if (eq *server-list* NIL)
     (progn
       (format t "No serverlist found!~%")
@@ -203,8 +207,8 @@
   (clean-ui))
 
 
-; Gets you a random word from @Revengeday:
 (defun send-random-word ()
+  "Creates a random word, using the API of @Revengeday"
   (clean-my-clothing (html-entities:decode-entities 
                                          (drakma:http-request "http://dev.revengeday.de/pointlesswords/api/")) 0))
 
@@ -212,7 +216,8 @@
 (defun take-all ()
   "Tries your username and password for any object"
   (mapcar #'(lambda (x) (fetch-my-clothing x))
-          (apply #'append (mapcar #'(lambda (x) (car (cdr x))) *all-obj-list*))))
+          (apply #'append (mapcar #'(lambda (x) (car (cdr x))) *all-obj-list*)))
+  (startup))
 
 (defun fetch-my-clothing (obj)
   "Just a simple search-my-clothing function for (take-all)"
@@ -228,8 +233,8 @@
                                                                      (cons "TakeAway" "True"))))))))
 
 
-; Allows you to change username & pwd temp.:
 (defun change-username ()
+  "Simple lets you reset the username and password for the current run"
   (format t "What username do you want to choose?~%")
   (setf *username* (read-line))
   (format t "And your password?~%")
@@ -237,8 +242,8 @@
   (startup))
 
 
-; First-run function - to get into washi.lisp:
 (defun first-init ()
+  "Initial function, gives some instructions and a small how to."
   (format t "~%~%~T~TWelcome to washi.lisp a full cl-i-ent (commonlisp-commandlineinterface-client) for @MeikosDis' Waschi~%~%")
   (format t "~T~TAt first the basics (for people too lazy reading the source-code):~%")
   (format t "~T~T~T> You can choose with the input of `search' `clean' and `quit' what you want to do~%")

@@ -28,3 +28,5 @@
 > Remove date from version [done]
 > Implement a take-all functions, which tries to grep any clothes with given user/pwd [done]
 > Moving code to github, because of better version control. [done]
+> Fix (take-all) to return to (startup) after run. [done]
+> Introduce doc-strings, instead of some comments. [done]

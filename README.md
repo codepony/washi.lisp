@@ -18,5 +18,6 @@ Just run 'sbcl --load washi.lisp' everything else will be introduced on screen.
 - clean - this will send your object to one server.
 - u - this will let you change your login data
 - take-all - this is somekind of 'bruteforce', and will try to get all objects on the servers with your login data.
+- back - brings you back to the search|clean|u|take-all startup-menu.
 - quit - the title says it all.
 
