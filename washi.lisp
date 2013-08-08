@@ -215,6 +215,8 @@
 
 (defun take-all ()
   "Tries your username and password for any object"
+  (get-server-list)
+  (save-obj-list)
   (mapcar #'(lambda (x) (fetch-my-clothing x))
           (apply #'append (mapcar #'(lambda (x) (car (cdr x))) *all-obj-list*)))
   (startup))
