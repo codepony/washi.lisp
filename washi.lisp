@@ -198,7 +198,7 @@
         (otherwise (format t "They can't clean that ~%")))
       (progn
         (format t "Oh well, they don't like you. Trying another server...~%")
-        (if (> callcount 10)
+        (if (> callcount (length *server-list*))
           (progn
             (format t "To many retries~%")
             (clean-ui))
