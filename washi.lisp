@@ -81,11 +81,10 @@
     ; Some servers give a #\Return #\Newline back:
     (let ((working-list (concatenate 'list working)))
     ; sometimes you get a code-file and sometimes chars (fuck webservers) 
-      (if (not (characterp (car working-list))) 
-        (setf working-list (flexi-streams:octets-to-string working :external-format :utf-8))
-        (setf working-list (flexi-streams:octets-to-string
-                             (flexi-streams:string-to-octets working) :external-format :utf-8))
-        )
+      (if (not (characterp (car working-list)))
+        (ignore-errors (setf working-list (flexi-streams:octets-to-string working :external-format :utf-8)))
+        (ignore-errors (setf working-list (flexi-streams:octets-to-string
+                             (flexi-streams:string-to-octets working) :external-format :utf-8))))
     ; producing a list we can work with (chars instead of code) - Now with working utf-8
     (remove '|| (mapcar #'intern
             (split-by-newline (concatenate 'string (remove #\Return (concatenate 'list working-list)))))))))
@@ -129,6 +128,7 @@
           ((equal str "u") (change-username))
           ((equal str "take-all") (take-all))
           ((equal str "quit") (exit))
+          ((equal str "score") (highscore))
           (t (startup)))))
 
 
@@ -243,12 +243,20 @@
   (setf *password* (read-line))
   (startup))
 
+(defun highscore ()
+  "fetches the current highscore from http://waschi.org/highscore.php"
+  (format t "~a ~%" (drakma:http-request "http://waschi.org/highscore.php"
+                                         :method :post
+                                         :parameters (list (cons "action" "list"))))
+  (startup))
+
 
 (defun first-init ()
   "Initial function, gives some instructions and a small how to."
   (format t "~%~%~T~TWelcome to washi.lisp a full cl-i-ent (commonlisp-commandlineinterface-client) for @MeikosDis' Waschi~%~%")
   (format t "~T~TAt first the basics (for people too lazy reading the source-code):~%")
   (format t "~T~T~T> You can choose with the input of `search' `clean' and `quit' what you want to do~%")
+  (format t "~T~T~T> Typing `score' will post the current highscore~%")
   (format t "~T~T~T> When you are in a mode you can go `back' to choose again (quit always works)~%")
   (format t "~T~T~T> In cleaning-mode you can wash a random item by typing `random'~%")
   (format t "~T~T~T> The laundry will be sent to a random waschi-server.~%")
